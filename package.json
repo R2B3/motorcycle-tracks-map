@@ -1,0 +1,25 @@
+{
+  "name": "motorcycle-tracks-map",
+  "version": "1.0.0",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "eslint-plugin-standard": "^4.0.1",
+    "mongodb": "^3.5.2",
+    "request": "^2.88.0",
+    "shapefile": "^0.6.6",
+    "utm": "^1.1.1",
+    "utm-latlng": "^1.0.6",
+    "xml-js": "^1.6.11"
+  },
+  "scripts": {
+    "process-routes": "node -r dotenv/config process-routes.js"
+  },
+  "devDependencies": {
+    "eslint": "^6.8.0",
+    "eslint-config-standard": "^14.1.0",
+    "eslint-plugin-import": "^2.20.0",
+    "eslint-plugin-node": "^11.0.0",
+    "eslint-plugin-promise": "^4.2.1"
+  }
+}
