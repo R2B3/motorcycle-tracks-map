@@ -1,4 +1,3 @@
-const Mongo = require('mongodb')
 const fs = require('fs')
 const fsp = require('fs').promises
 const convert = require('xml-js')
@@ -27,11 +26,11 @@ const doWork = async () => {
 }
 
 // const groupAndCountRoads = (tracksWithRoadsCollection) => {
-//   tracksWithRoadsCollection.aggregate([
-//     { $unwind: '$roadIds' },
-//     { $group: { _id: '$roadIds', count: { $sum: 1 } } },
-//     { $match: { count: { $gt: 1 } } }
-//   ])
+  // tracksWithRoadsCollection.aggregate([
+  //   { $unwind: '$roadIds' },
+  //   { $group: { _id: '$roadIds', count: { $sum: 1 } } },
+  //   { $match: { count: { $gt: 1 } } }
+  // ])
 // }
 
 const processOneTrack = async (pathToTrack, shapeFileCollection, tracksWithRoadsCollection) => {
