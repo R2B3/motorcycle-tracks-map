@@ -8,6 +8,18 @@ const getTracksWithRoadsCollection = () => mongoConnection
   .then(db => db.collection('tracks-with-roads'))
   .catch(err => console.log(err))
 
+const getShapefileCollection = () => mongoConnection
+  .then(() => mongoClient.db('mopped'))
+  .then(db => db.collection('shapefile'))
+  .catch(err => console.log(err))
+
+const getNoResultPointsCollection = () => mongoConnection
+  .then(() => mongoClient.db('mopped'))
+  .then(db => db.collection('no-result-points'))
+  .catch(err => console.log(err))
+
 module.exports = {
-  getTracksWithRoadsCollection
+  getTracksWithRoadsCollection,
+  getShapefileCollection,
+  getNoResultPointsCollection
 }

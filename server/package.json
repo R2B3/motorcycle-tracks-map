@@ -1,0 +1,21 @@
+{
+  "name": "motorcycle-tracks-map-server",
+  "version": "1.0.0",
+  "description": "Express server getting data from the MongoDB and serving via REST API.",
+  "main": "server.js",
+  "author": "Robin Bougardier",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "eslint-plugin-standard": "^4.0.1",
+    "express": "^4.17.1",
+    "mongodb": "^3.5.2",
+  },
+  "devDependencies": {
+    "eslint": "^6.8.0",
+    "eslint-config-standard": "^14.1.0",
+    "eslint-plugin-import": "^2.20.0",
+    "eslint-plugin-node": "^11.0.0",
+    "eslint-plugin-promise": "^4.2.1"
+  }
+}

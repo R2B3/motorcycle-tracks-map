@@ -1,0 +1,23 @@
+{
+  "name": "motorcycle-tracks-map-etl",
+  "version": "1.0.0",
+  "description": "ETL project to load shapefile with roadss into MongoDB, download tracks from website and process them to get a collection of most-used roads. ",
+  "author": "Robin Bougardier",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "eslint-plugin-standard": "^4.0.1",
+    "mongodb": "^3.5.2",
+    "request": "^2.88.0",
+    "shapefile": "^0.6.6",
+    "utm": "^1.1.1",
+    "xml-js": "^1.6.11"
+  },
+  "devDependencies": {
+    "eslint": "^6.8.0",
+    "eslint-config-standard": "^14.1.0",
+    "eslint-plugin-import": "^2.20.0",
+    "eslint-plugin-node": "^11.0.0",
+    "eslint-plugin-promise": "^4.2.1"
+  }
+}
