@@ -5,14 +5,14 @@ export const trackLayer = {
       'line-color': {
         property: 'useCount',
         stops: [
-          [1, '#3288bd'],
-          [5, '#66c2a5'],
-          [10, '#abdda4'],
-          [15, '#e6f598'],
-          [25, '#ffffbf'],
-          [50, '#fee08b'],
-          [80, '#fdae61'],
-          [100, '#f46d43'],
+          [12, '#3288bd'],
+          [15, '#66c2a5'],
+          [20, '#abdda4'],
+          [30, '#e6f598'],
+          [50, '#ffffbf'],
+          [75, '#fee08b'],
+          [100, '#fdae61'],
+          [200, '#f46d43'],
         ]
       },
       'line-opacity': 1,
