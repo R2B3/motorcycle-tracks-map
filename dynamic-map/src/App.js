@@ -6,6 +6,7 @@ import geoViewport from '@mapbox/geo-viewport'
 import debounce from 'lodash/debounce'
 import isNil from 'lodash/isNil'
 import cloneDeep from 'lodash/cloneDeep'
+const minUse = 12
 
 const App = () => {
   const [tracks, setTracks] = useState(null)
@@ -25,7 +26,7 @@ const App = () => {
     let didCancel = false
     const fetchData = async () => {
         try {
-          const result = await (await fetch(`/tracks/geojson?minUse=500`)).json()
+          const result = await (await fetch(`/tracks/geojson?minUse=${minUse}`)).json()
           if (!didCancel) {
             setTracks(result)
           }

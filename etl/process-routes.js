@@ -1,6 +1,6 @@
 const fs = require('fs')
 const convert = require('xml-js')
-
+const Mongo = require('mongodb')
 const MongoClient = require('mongodb').MongoClient
 const mongoDbUrl = 'mongodb://localhost:27017'
 
@@ -10,7 +10,7 @@ const _isArray = require('lodash/isArray')
 const _chunk = require('lodash/chunk')
 
 const doWork = async () => {
-  const tracksDirectory = './etl/tracks'
+  const tracksDirectory = './tracks'
   const dbName = 'mopped'
   const tracksWithRoadsCollectionName = 'tracks-with-roads'
 
@@ -48,13 +48,6 @@ const doWork = async () => {
 
 const preCleanup = async (tracksWithRoadsCollection) => tracksWithRoadsCollection.deleteMany({})
 
-// const groupAndCountRoads = (tracksWithRoadsCollection) => {
-  // tracksWithRoadsCollection.aggregate([
-  //   { $unwind: '$roadIds' },
-  //   { $group: { _id: '$roadIds', count: { $sum: 1 } } },
-  //   { $match: { count: { $gt: 1 } } }
-  // ])
-// }
 
 const getInsertForOneTrack = async (pathToTrack, getClosestRoadFct) => {
   try {
@@ -62,10 +55,8 @@ const getInsertForOneTrack = async (pathToTrack, getClosestRoadFct) => {
     const json = convert.xml2js(xml, { compact: true, ignoreComment: true, alwaysChildren: true })
     const coordinates = getArrayOfArrayOfCoordinates(json)
     if (coordinates.length === 0) return null
-
     const coordinateResults = await getResultFromCoordinates(coordinates, getClosestRoadFct)
-    return (({ insertOne: { ...coordinateResults, roadIds: Array.from(coordinateResults.roadIds), coordinates } }))
-    // return tracksWithRoadsCollection.insertOne({ ...coordinateResults, roadIds: Array.from(coordinateResults.roadIds), coordinates })
+    return (({ insertOne: { ...coordinateResults, roadIds: Array.from(coordinateResults.roadIds).map(x => new Mongo.ObjectID(x) ), coordinates } }))
   } catch (error) {
     console.log(pathToTrack + ': ' + error)
   }
@@ -89,7 +80,7 @@ const getResultFromCoordinates = async (coordinates, getClosestRoadsFct) => {
     const currentResult = await getClosestRoadsFct(current)
     if (currentResult.length === 0) newAgg.noResult.push(current)
     if (currentResult.length >= 1) {
-      newAgg.roadIds.add(currentResult[0]._id)
+      newAgg.roadIds.add(currentResult[0]._id.toString())
       newAgg.success.push(current)
     }
     return newAgg
