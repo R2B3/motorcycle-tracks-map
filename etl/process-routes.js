@@ -12,7 +12,7 @@ const _chunk = require('lodash/chunk')
 const doWork = async () => {
   const tracksDirectory = './tracks'
   const dbName = 'mopped'
-  const tracksWithRoadsCollectionName = 'tracks-with-roads'
+  const tracksWithRoadsCollectionName = 'tracks-with-roads' // 'tracks-with-roads'
 
   const connection = await MongoClient.connect(mongoDbUrl, {
     useNewUrlParser: true,
@@ -23,6 +23,9 @@ const doWork = async () => {
   const tracksWithRoadsCollection = await db.collection(tracksWithRoadsCollectionName)
   await preCleanup(tracksWithRoadsCollection)
 
+  const countryCollection = await db.collection('countries')
+  const getCountryFct = await getCountryFromDb(countryCollection)
+  
   const shapeFileCollection = await db.collection('shapefile')
   const getClosestRoadFct = await getClosestRoadsFromDb(shapeFileCollection)
 
@@ -40,7 +43,7 @@ const doWork = async () => {
   return _chunk(trackPaths, 1000).reduce(async (agg, trackFilePaths, index) => {
     await agg
     console.log(index * 1000)
-    const inserts = (await Promise.all(trackFilePaths.map(async x => getInsertForOneTrack(x, getClosestRoadFct)))).filter(x => x !== null)
+    const inserts = (await Promise.all(trackFilePaths.map(async x => getInsertForOneTrack(x, getCountryFct, getClosestRoadFct)))).filter(x => x !== null)
     await tracksWithRoadsCollection.bulkWrite(inserts)
     return agg
   }, Promise.resolve(0))
@@ -49,14 +52,16 @@ const doWork = async () => {
 const preCleanup = async (tracksWithRoadsCollection) => tracksWithRoadsCollection.deleteMany({})
 
 
-const getInsertForOneTrack = async (pathToTrack, getClosestRoadFct) => {
+const getInsertForOneTrack = async (pathToTrack, getCountryFct, getClosestRoadFct) => {
   try {
     const xml = fs.readFileSync(pathToTrack, 'utf8')
     const json = convert.xml2js(xml, { compact: true, ignoreComment: true, alwaysChildren: true })
     const coordinates = getArrayOfArrayOfCoordinates(json)
     if (coordinates.length === 0) return null
-    const coordinateResults = await getResultFromCoordinates(coordinates, getClosestRoadFct)
-    return (({ insertOne: { ...coordinateResults, roadIds: Array.from(coordinateResults.roadIds).map(x => new Mongo.ObjectID(x) ), coordinates } }))
+
+    const coordinateResults = await getResultFromCoordinates(coordinates, getCountryFct, getClosestRoadFct)
+    // include country but not coordinates
+    return (({ insertOne: { ...coordinateResults, roadIds: Array.from(coordinateResults.roadIds).map(x => new Mongo.ObjectID(x) ), countries: Array.from(coordinateResults.countries) }, coordinates }))
   } catch (error) {
     console.log(pathToTrack + ': ' + error)
   }
@@ -67,16 +72,22 @@ const getArrayOfArrayOfCoordinates = trackJson => _isArray(_get(trackJson, 'gpx.
 
 const convertCoordinateObjectToArray = x => [parseFloat(x._attributes.lon), parseFloat(x._attributes.lat)]
 
-const getResultFromCoordinates = async (coordinates, getClosestRoadsFct) => {
+const getResultFromCoordinates = async (coordinates, getCountryFct, getClosestRoadsFct) => {
   const resultObj = {
     roadIds: new Set(),
     success: [],
     noResult: [],
-    ambigousResult: []
+    ambigousResult: [],
+    countries: new Set(),
   }
 
   return coordinates.reduce(async (agg, current) => {
     const newAgg = await agg
+    
+    const country = await getCountryFct(current).then(result => result.length === 0 ? null : result[0]._id)
+    newAgg.countries.add(country)
+    if (country !== 'Germany') return newAgg
+
     const currentResult = await getClosestRoadsFct(current)
     if (currentResult.length === 0) newAgg.noResult.push(current)
     if (currentResult.length >= 1) {
@@ -86,6 +97,20 @@ const getResultFromCoordinates = async (coordinates, getClosestRoadsFct) => {
     return newAgg
   }, Promise.resolve(resultObj))
 }
+
+const getCountryFromDb = curry(async (collection, coordinates) => (
+  collection.aggregate([
+    {
+      $geoNear: {
+        near: { type: 'Point', coordinates },
+        distanceField: 'distance',
+        maxDistance: 0,
+        spherical: true
+      }
+    },
+    { $project: { _id: '$properties.NAME_ENGL' } }
+  ]).toArray()
+))
 
 const getClosestRoadsFromDb = curry(async (collection, coordinates) => (
   collection.aggregate([

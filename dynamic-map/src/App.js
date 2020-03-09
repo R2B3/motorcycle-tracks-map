@@ -26,6 +26,7 @@ const App = () => {
     let didCancel = false
     const fetchData = async () => {
         try {
+          // const result = await (await fetch('/tracks/geojson/5e389a9fca15f9404c40f266')).json()
           const result = await (await fetch(`/tracks/geojson?minUse=${minUse}`)).json()
           if (!didCancel) {
             setTracks(result)

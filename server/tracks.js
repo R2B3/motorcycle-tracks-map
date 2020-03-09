@@ -1,5 +1,7 @@
 const Router = require('express')
 const router = new Router()
+const Mongo = require('mongodb')
+const getDistance = require('geojson-tools').getDistance
 
 const init = mongoConnect => {
   router.get('/tracks/geojson', async (req, res) => {
@@ -24,6 +26,36 @@ const init = mongoConnect => {
       }), [])
     })
   })
+
+  router.get('/tracks/geojson/:id', async (req, res) => {
+    const collection = await mongoConnect.getTracksWithRoadsCollection()
+    const resultFroMDb = await collection.aggregate([
+        { $match: { _id: new Mongo.ObjectId(req.params.id) } },
+        { $unwind: '$roadIds' },
+        { $lookup: { from: 'shapefile', foreignField: '_id', localField: 'roadIds', as: 'road' } },
+        { $project: { road: { $arrayElemAt: ['$road', 0] } } }
+    ]).toArray()
+
+    const originalTrack = await collection.findOne({ _id: new Mongo.ObjectId(req.params.id) } )
+    
+
+    const length = getDistance(originalTrack.coordinates)
+
+    return res.json({
+      type: 'FeatureCollection',
+      properties: {
+        length
+      },
+      features: resultFroMDb.map(x => ({
+        type: 'Feature',
+        properties: {
+          useCount: 9999,
+        },
+        geometry: x.road.geoJson
+      }), [])
+    })
+  })
+
 
   router.get('/tracks/maxuse', async (req, res) => {
     const collection = await mongoConnect.getTracksWithRoadsCollection()
