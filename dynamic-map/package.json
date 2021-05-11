@@ -10,7 +10,7 @@
     "@testing-library/user-event": "^7.1.2",
     "express": "^4.17.1",
     "http-proxy-middleware": "^0.20.0",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.21",
     "mapbox-gl": "^1.6.1",
     "path": "^0.12.7",
     "react": "^16.12.0",
